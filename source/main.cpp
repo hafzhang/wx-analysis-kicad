@@ -1,10 +1,28 @@
 #include <wx/wx.h>
 #include <wx/listbook.h>
+#include <wx/dirdlg.h>
+#include <wx/dir.h>
+#include <wx/button.h>
 
 #include <random>
+#include <cstdio>
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+#include <wx/string.h>
+#include <set>
+#include <wx/arrstr.h>
+#include <string>
+#include <vector>
 
 #include "drawingcanvas.h"
-#include "chartcontrol.h"
+// #include "chartcontrol.h"
+#include "KicadSymbol.h"
+
+#define wxID_UNITS_INCHES 1
+#define wxID_UNITS_MM 2
 
 class MyApp : public wxApp
 {
@@ -22,11 +40,32 @@ private:
 
     void OnRectAdded(wxCommandEvent &event);
     void OnRectRemoved(wxCommandEvent &event);
+    void YourEventHandler(wxCommandEvent &event);
+    void MultiAnalyseLCEDASYM(wxCommandEvent &event);
+
+
+
+    wxString OpenDirDialog( wxString strTip );
+    wxArrayString GetAllFilesInDir( wxString strDir );
+
+
+
 
     wxPanel *createButtonPanel(wxWindow *parent);
+    wxPanel *dropDownPanel(wxWindow* parent);
 
     DrawingCanvas *canvas;
-    ChartControl *chart;
+    // ChartControl *chart;
+    DrawingCanvas *canvas1;
+    wxPanel *dropButtons;
+
+    wxButton* import;
+
+
+    wxComboBox* m_comboBox1;
+    wxCheckBox* m_checkBox1;
+    wxCheckBox* m_checkBox2;
+
 
     int rectCount = 0;
     std::mt19937 randomGen;
@@ -67,18 +106,43 @@ MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
 
     tabs->AddPage(drawingPaneWithButtons, "Rectangles");
 
-    chart = new ChartControl(tabs, wxID_ANY, wxDefaultPosition, wxDefaultSize);
-    chart->title = "Important Chart";
-    chart->values = {0.34, -0.17, 0.98, 0.33};
+    // chart = new ChartControl(tabs, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    // chart->title = "Important Chart";
+    // chart->values = {0.34, -0.17, 0.98, 0.33};
 
-    tabs->AddPage(chart, "Chart");
+    // tabs->AddPage(chart, "Chart");
+
+
+
+    dropButtons = new wxPanel(tabs);
+    wxBoxSizer* bSizer1 = new wxBoxSizer(wxVERTICAL);
+
+
+    wxBoxSizer* dropSizer1 = new wxBoxSizer(wxHORIZONTAL);
+
+    wxStaticText* staticText1 = new wxStaticText(dropButtons, wxID_ANY, "Units:", wxDefaultPosition, wxDefaultSize, 0);
+    dropSizer1->Add(staticText1, 0,  wxEXPAND | wxLEFT, 5);
+
+    bSizer1->Add(dropSizer1, 0, wxEXPAND | wxTOP | wxLEFT | wxRIGHT, 0);
+
+    import = new wxButton(dropButtons, wxID_ANY, wxT("MyButton"), wxDefaultPosition, wxDefaultSize, 0);
+    import->Bind(wxEVT_BUTTON, &MyFrame::MultiAnalyseLCEDASYM, this);
+    bSizer1->Add(import, 0, wxALL, 5);
+
+
+    dropButtons->SetSizer(bSizer1);
+    tabs->AddPage(dropButtons, "drop-down");
     tabs->SetSelection(1);
+    this->SetSizerAndFit(mainSizer);  
 
-    this->SetSizerAndFit(mainSizer);
+
 
     CreateStatusBar(1);
     SetStatusText("Ready", 0);
 }
+
+
+
 
 void MyFrame::OnAddButtonClick(wxCommandEvent &event)
 {
@@ -109,6 +173,8 @@ void MyFrame::OnRectRemoved(wxCommandEvent &event)
     SetStatusText("Rect named " + event.GetString() + " REMOVED!", 0);
 }
 
+
+
 wxPanel *MyFrame::createButtonPanel(wxWindow *parent)
 {
     wxPanel *panel = new wxPanel(parent);
@@ -125,4 +191,64 @@ wxPanel *MyFrame::createButtonPanel(wxWindow *parent)
     removeLastButton->Bind(wxEVT_BUTTON, &MyFrame::OnRemoveButtonClick, this);
 
     return panel;
+}
+
+
+wxPanel *MyFrame::dropDownPanel(wxWindow* parent)
+{
+    wxPanel *panel = new wxPanel(parent);
+    wxBoxSizer* bSizer1 = new wxBoxSizer(wxVERTICAL);
+
+    m_comboBox1 = new wxComboBox(panel, wxID_ANY, wxT("Combo!"), wxDefaultPosition, wxDefaultSize, 0, NULL, 0);
+    bSizer1->Add(m_comboBox1, 0, wxALL, 5);
+
+    // Adding checkboxes
+    m_checkBox1 = new wxCheckBox(panel, wxID_ANY, wxT("Option 1"));
+    bSizer1->Add(m_checkBox1, 0, wxALL, 5);
+
+    m_checkBox2 = new wxCheckBox(panel, wxID_ANY, wxT("Option 2"));
+    bSizer1->Add(m_checkBox2, 0, wxALL, 5);
+
+    panel->SetSizer(bSizer1);
+    panel->Layout();
+    return panel;
+}
+
+void MyFrame::MultiAnalyseLCEDASYM(wxCommandEvent &event)
+{
+    KicadSymbol SYMT;
+    SYMT.MultiAnalyseEDASYM();
+
+}
+
+
+
+//wx Open Selected Dir dialog( -sxl)
+wxString MyFrame::OpenDirDialog( wxString strTip )
+{
+    wxDirDialog dlg( nullptr, strTip, "C://Users//haf//Desktop//symbol", wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST );
+
+    if( dlg.ShowModal() == wxID_OK )
+    {
+        return dlg.GetPath();
+    }
+
+    return "";
+}
+
+//wx Get All File in Dir( -sxl)
+wxArrayString MyFrame::GetAllFilesInDir( wxString strDir )
+{
+    wxDir         dir;
+    wxArrayString fileLists;
+    wxString      fileSpec = wxT( "*.kicad_sym" );
+    // wxString      fileSpecJson = wxT( "*.json" );
+    int           numFilesFound;
+    if( dir.Open( strDir ) )
+    {
+        numFilesFound = dir.GetAllFiles( strDir, &fileLists, fileSpec );
+        // numFilesFound = dir.GetAllFiles( strDir, &fileLists, fileSpecJson );
+    }
+
+    return fileLists;
 }

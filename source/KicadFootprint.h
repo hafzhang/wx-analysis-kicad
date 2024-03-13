@@ -1,23 +1,17 @@
-#ifndef KICADSYMBOL_H
-#define KICADSYMBOL_H
+#ifndef KICADFOOTPRINT_H
+#define KICADFOOTPRINT_H
 
 
-
-
-class KicadSymbol
+class KicadFootprint
 {
 public:
-    KicadSymbol();
-    ~KicadSymbol();
+    KicadFootprint();
+    ~KicadFootprint();
 
 public:
 
 
-    void MultiAnalyseEDASYM();
-
-    void AnalysistoTrainSymbol();
-    
-    void TransitiontoSangleSYM();
+    void AnalysisFootprint3DModel();
 
 
     std::string replaceAll(std::string str, const std::string& from, const std::string& to);
@@ -25,7 +19,10 @@ public:
 
     std::vector<std::string> split(const std::string& s, char delimiter);
     wxString  OpenDirDialog( wxString strTip );
+    // wxArrayString GetAllFilesInDir( wxString strDir );
     wxArrayString GetAllFilesInDir( wxString strDir );
+
+
 
 public:
 
@@ -33,4 +30,4 @@ public:
 };
 
 
-#endif   // KICADSYMBOL_H_
+#endif   // KICADFOOTPRINT_H_

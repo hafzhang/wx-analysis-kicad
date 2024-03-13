@@ -20,6 +20,8 @@
 #include "drawingcanvas.h"
 // #include "chartcontrol.h"
 #include "KicadSymbol.h"
+#include "KicadFootprint.h"
+#include "SymboltoJson.h"
 
 #define wxID_UNITS_INCHES 1
 #define wxID_UNITS_MM 2
@@ -41,12 +43,14 @@ private:
     void OnRectAdded(wxCommandEvent &event);
     void OnRectRemoved(wxCommandEvent &event);
     void YourEventHandler(wxCommandEvent &event);
-    void MultiAnalyseLCEDASYM(wxCommandEvent &event);
+    void AnalysistoTrainSymbol(wxCommandEvent &event);
+    void AnalysisSymboltoCSV(wxCommandEvent &event);
+    void AnalysisFootprint3DModel(wxCommandEvent &event);
+    void SymboltransformJsonFormat(wxCommandEvent &event);
+    void SymbolAnalysisJsonlFile(wxCommandEvent &event);
 
 
 
-    wxString OpenDirDialog( wxString strTip );
-    wxArrayString GetAllFilesInDir( wxString strDir );
 
 
 
@@ -60,6 +64,13 @@ private:
     wxPanel *dropButtons;
 
     wxButton* import;
+
+    wxButton* analysisSymbolCSV;
+    wxButton* foot3DModel;
+    wxButton* toJson;
+    wxButton* toJsonl;
+    wxButton* transition;
+
 
 
     wxComboBox* m_comboBox1;
@@ -113,7 +124,6 @@ MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
     // tabs->AddPage(chart, "Chart");
 
 
-
     dropButtons = new wxPanel(tabs);
     wxBoxSizer* bSizer1 = new wxBoxSizer(wxVERTICAL);
 
@@ -122,12 +132,29 @@ MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
 
     wxStaticText* staticText1 = new wxStaticText(dropButtons, wxID_ANY, "Units:", wxDefaultPosition, wxDefaultSize, 0);
     dropSizer1->Add(staticText1, 0,  wxEXPAND | wxLEFT, 5);
-
     bSizer1->Add(dropSizer1, 0, wxEXPAND | wxTOP | wxLEFT | wxRIGHT, 0);
 
-    import = new wxButton(dropButtons, wxID_ANY, wxT("MyButton"), wxDefaultPosition, wxDefaultSize, 0);
-    import->Bind(wxEVT_BUTTON, &MyFrame::MultiAnalyseLCEDASYM, this);
+
+
+    analysisSymbolCSV = new wxButton(dropButtons, wxID_ANY, wxT("analysis symbol to CSV"), wxDefaultPosition, wxDefaultSize, 0);
+    analysisSymbolCSV->Bind(wxEVT_BUTTON , &MyFrame::AnalysisSymboltoCSV, this );
+    bSizer1->Add(analysisSymbolCSV, 0, wxALL, 5);
+
+    foot3DModel = new wxButton(dropButtons, wxID_ANY, wxT("analysis footprint 3dmodel"), wxDefaultPosition, wxDefaultSize, 0);
+    foot3DModel->Bind(wxEVT_BUTTON, &MyFrame::AnalysisFootprint3DModel, this);
+    bSizer1->Add(foot3DModel, 0, wxALL, 5);
+
+    import = new wxButton(dropButtons, wxID_ANY, wxT("analysis single train symbol"), wxDefaultPosition, wxDefaultSize, 0);
+    import->Bind(wxEVT_BUTTON, &MyFrame::AnalysistoTrainSymbol, this);
     bSizer1->Add(import, 0, wxALL, 5);
+
+    toJson = new wxButton(dropButtons, wxID_ANY, wxT("symbol transform json format"), wxDefaultPosition, wxDefaultSize, 0);
+    toJson->Bind(wxEVT_BUTTON, &MyFrame::SymboltransformJsonFormat, this);
+    bSizer1->Add(toJson, 0, wxALL, 5);
+
+    toJsonl = new wxButton(dropButtons, wxID_ANY, wxT("symbol analysis jsonl file"), wxDefaultPosition, wxDefaultSize, 0);
+    toJsonl->Bind(wxEVT_BUTTON, &MyFrame::SymbolAnalysisJsonlFile, this);
+    bSizer1->Add(toJsonl, 0, wxALL, 5);
 
 
     dropButtons->SetSizer(bSizer1);
@@ -214,41 +241,33 @@ wxPanel *MyFrame::dropDownPanel(wxWindow* parent)
     return panel;
 }
 
-void MyFrame::MultiAnalyseLCEDASYM(wxCommandEvent &event)
+void MyFrame::AnalysistoTrainSymbol(wxCommandEvent &event)
+{
+    KicadSymbol SYMT;
+    SYMT.AnalysistoTrainSymbol();
+}
+
+void MyFrame::AnalysisSymboltoCSV(wxCommandEvent &event)
 {
     KicadSymbol SYMT;
     SYMT.MultiAnalyseEDASYM();
-
 }
 
-
-
-//wx Open Selected Dir dialog( -sxl)
-wxString MyFrame::OpenDirDialog( wxString strTip )
+void MyFrame::AnalysisFootprint3DModel(wxCommandEvent &event)
 {
-    wxDirDialog dlg( nullptr, strTip, "C://Users//haf//Desktop//symbol", wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST );
-
-    if( dlg.ShowModal() == wxID_OK )
-    {
-        return dlg.GetPath();
-    }
-
-    return "";
+    KicadFootprint foot3D;
+    foot3D.AnalysisFootprint3DModel();
 }
 
-//wx Get All File in Dir( -sxl)
-wxArrayString MyFrame::GetAllFilesInDir( wxString strDir )
+void MyFrame::SymboltransformJsonFormat(wxCommandEvent &event)
 {
-    wxDir         dir;
-    wxArrayString fileLists;
-    wxString      fileSpec = wxT( "*.kicad_sym" );
-    // wxString      fileSpecJson = wxT( "*.json" );
-    int           numFilesFound;
-    if( dir.Open( strDir ) )
-    {
-        numFilesFound = dir.GetAllFiles( strDir, &fileLists, fileSpec );
-        // numFilesFound = dir.GetAllFiles( strDir, &fileLists, fileSpecJson );
-    }
 
-    return fileLists;
+    SymboltoJson symJson;
+    symJson.AnalysisSymboltoJson();
+}
+
+void MyFrame::SymbolAnalysisJsonlFile(wxCommandEvent &event)
+{
+    SymboltoJson symJson;
+    symJson.SymboltoJsonl();
 }

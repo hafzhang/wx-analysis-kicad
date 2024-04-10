@@ -157,23 +157,6 @@ wxString KicadFootprint::OpenDirDialog( wxString strTip )
     return "";
 }
 
-// //wx Get All File in Dir( -sxl)
-// wxArrayString KicadFootprint::GetAllFilesInDir( wxString strDir )
-// {
-//     wxDir         dir;
-//     wxArrayString fileLists;
-//     wxString      fileSpec = wxT( "*.kicad_mod" );
-//     // wxString      fileSpecJson = wxT( "*.json" );
-//     int           numFilesFound;
-//     if( dir.Open( strDir ) )
-//     {
-//         numFilesFound = dir.GetAllFiles( strDir, &fileLists, fileSpec );
-//         // numFilesFound = dir.GetAllFiles( strDir, &fileLists, fileSpecJson );
-//     }
-
-//     return fileLists;
-// }
-
 wxArrayString KicadFootprint::GetAllFilesInDir(wxString strDir)
 {
     wxArrayString fileLists;

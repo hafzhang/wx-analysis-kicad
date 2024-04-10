@@ -6,7 +6,12 @@ set(wxWidgets_USE_STATIC 1)
 
 find_package(wxWidgets REQUIRED)
 
-set(SRCS main.cpp drawingcanvas.cpp chartcontrol.cpp KicadSymbol.cpp KicadFootprint.cpp SymboltoJson.cpp)
+set(SRCS main.cpp 
+    drawingcanvas.cpp chartcontrol.cpp
+    KicadSymbol.cpp KicadFootprint.cpp 
+    SymboltoJson.cpp analysisLCSymbol.cpp
+    convertAltiumFp.cpp
+    )
 
 include(${wxWidgets_USE_FILE})
 

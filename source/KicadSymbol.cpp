@@ -184,69 +184,6 @@ void KicadSymbol::AnalysistoTrainSymbol()
                     if(line.find("kicad_symbol_lib") != std::string::npos ){
                         currentBlock.clear();
                     }
-                    //当遇到继承的符号时，修改符号寻找母亲符号。
-                    // if(flag == 1){
-                    //         if (line.find("(symbol") != std::string::npos && (line.find("in_bom yes") != std::string::npos || line.find("extends") != std::string::npos ) ) {
-                                
-                    //             if(line.find("in_bom yes") != std::string::npos)  {  
-                    //                 flag =0;  
-                    //             }
-                    //             else if(line.find("extends") != std::string::npos)
-                    //             { 
-                    //                 flag = 1;
-                    //                 // continue;
-                    //             } 
-                                
-                    //             int linesToSkip = 0;
-                    //             bool flg = 0;
-
-                    //             while (getline(readFile1, sourceline)){
-
-                    //                 if (sourceline.find("(symbol") != std::string::npos && sourceline.find(symbol_source) != std::string::npos  && 
-                    //                 sourceline.find("in_bom yes") != std::string::npos ) {
-                    //                     // Start a new block
-                    //                     flg = 1;
-                    //                     currentBlock.pop_back();
-                    //                     continue;
-                    //                 }
-                    //                 if( flg == 1 ){
-
-
-                    //                     if (sourceline.find("(property") != std::string::npos) {
-                    //                         linesToSkip = 2;
-                    //                         continue;
-                    //                     }
-                    //                      if (linesToSkip > 0) {
-                    //                         linesToSkip--;
-                    //                         continue;  // Skip the current line
-                    //                     }
-                    //                     if (sourceline.find("(symbol") != std::string::npos && (sourceline.find("in_bom yes") != std::string::npos || sourceline.find("extends") != std::string::npos ) ) {
-                    //                         // Start a new block
-                    //                         vecSYMLine.push_back(currentBlock);
-                    //                         currentBlock.clear();
-                    //                         readFile1.seekg(0, std::ios::beg);
-                    //                         break;
-                    //                     }
-
-
-                    //                     if (sourceline.find(symbol_source) != std::string::npos ){
-                                            
-                    //                         sourceline = replaceAll(sourceline, symbol_source, symbol_extend);
-
-                    //                     }
-                    //                     currentBlock.push_back(sourceline);
-                    //                 }
-
-                    //             }
-
-
-                    //             vecSYMLine.push_back(currentBlock);
-                    //             currentBlock.clear();
-
-                    //         }
-
-                    // }
-
 
 
 
@@ -257,19 +194,7 @@ void KicadSymbol::AnalysistoTrainSymbol()
                         currentBlock.clear();
                     }else if(line.find("  (symbol") != std::string::npos && line.find("extends") != std::string::npos ) {
                         flag = 1;
-                        // symbol_extend = split(line, '\"')[1];
-                        // size_t pos = line.find("extends");
-                        // symbol_source = split(line.substr(pos), '\"')[1];
-                        
-                        //delete extend part
-                        // size_t start = line.find("(extends ");
-                        // if(start != string::npos) {
-                        //     size_t end = line.find(")", start);
-                        //     line.erase(start, end-start+1);
-                        // }
-
-                        // line = line + " (in_bom yes) (on_board yes)";
-                        
+ 
                         vecSYMLine.push_back(currentBlock);
                         currentBlock.clear();
 
@@ -280,48 +205,7 @@ void KicadSymbol::AnalysistoTrainSymbol()
 
                 if (readFile.eof()){
                     currentBlock.pop_back();
-                    // if(flag ==1 ){
 
-                    //     int linesToSkip = 0;
-                    //     bool flg = 0;
-                    //     while (getline(readFile1, sourceline)){
-
-                    //         if (sourceline.find("(symbol") != std::string::npos && sourceline.find(symbol_source) != std::string::npos  && 
-                    //         sourceline.find("in_bom yes") != std::string::npos ) {
-                    //             // Start a new block
-                    //             flg = 1;
-                    //             currentBlock.pop_back();
-                    //             continue;
-                    //         }
-                    //         if( flg == 1 ){
-
-
-                    //             if (sourceline.find("(property") != std::string::npos) {
-                    //                 linesToSkip = 2;
-                    //                 continue;
-                    //             }
-                    //                 if (linesToSkip > 0) {
-                    //                 linesToSkip--;
-                    //                 continue;  // Skip the current line
-                    //             }
-                    //             if (sourceline.find("(symbol") != std::string::npos && (sourceline.find("in_bom yes") != std::string::npos || sourceline.find("extends") != std::string::npos ) ) {
-                    //                 // Start a new block
-                    //                 vecSYMLine.push_back(currentBlock);
-                    //                 currentBlock.clear();
-                    //                 readFile1.seekg(0, std::ios::beg);
-                    //                 break;
-                    //             }
-
-
-                    //             if (sourceline.find(symbol_source) != std::string::npos ){
-                                    
-                    //                 sourceline = replaceAll(sourceline, symbol_source, symbol_extend);
-
-                    //             }
-                    //             currentBlock.push_back(sourceline);
-                    //         }
-                    //     }
-                    // }
                     vecSYMLine.push_back(currentBlock);
                     currentBlock.clear();
                 }
@@ -354,11 +238,9 @@ void KicadSymbol::AnalysistoTrainSymbol()
 
                     outputFile.close();
 
-
                     ++j;
                 
                 }
-
 
             }
             readFile.close();

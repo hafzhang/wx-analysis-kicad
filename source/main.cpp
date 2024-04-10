@@ -22,6 +22,8 @@
 #include "KicadSymbol.h"
 #include "KicadFootprint.h"
 #include "SymboltoJson.h"
+#include "analysisLCSymbol.h"
+#include"ConvertAltiumFp.h"
 
 #define wxID_UNITS_INCHES 1
 #define wxID_UNITS_MM 2
@@ -48,8 +50,8 @@ private:
     void AnalysisFootprint3DModel(wxCommandEvent &event);
     void SymboltransformJsonFormat(wxCommandEvent &event);
     void SymbolAnalysisJsonlFile(wxCommandEvent &event);
-
-
+    void AnalysisSangleLCSym(wxCommandEvent &event);
+    void ConvertAltiumFootprint(wxCommandEvent &event);
 
 
 
@@ -70,8 +72,8 @@ private:
     wxButton* toJson;
     wxButton* toJsonl;
     wxButton* transition;
-
-
+    wxButton* LCSymbol;
+    wxButton* AltFootprint;
 
     wxComboBox* m_comboBox1;
     wxCheckBox* m_checkBox1;
@@ -155,6 +157,14 @@ MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
     toJsonl = new wxButton(dropButtons, wxID_ANY, wxT("symbol analysis jsonl file"), wxDefaultPosition, wxDefaultSize, 0);
     toJsonl->Bind(wxEVT_BUTTON, &MyFrame::SymbolAnalysisJsonlFile, this);
     bSizer1->Add(toJsonl, 0, wxALL, 5);
+
+    LCSymbol = new wxButton(dropButtons, wxID_ANY, wxT("LC symbol Analytical simplification"), wxDefaultPosition, wxDefaultSize, 0);
+    LCSymbol->Bind(wxEVT_BUTTON, &MyFrame::AnalysisSangleLCSym, this);
+    bSizer1->Add(LCSymbol, 0, wxALL, 5);
+
+    AltFootprint = new wxButton(dropButtons, wxID_ANY, wxT("Altium Footprint convert kicad by kicad-cli"), wxDefaultPosition, wxDefaultSize, 0);
+    AltFootprint->Bind(wxEVT_BUTTON, &MyFrame::ConvertAltiumFootprint, this);
+    bSizer1->Add(AltFootprint, 0, wxALL, 5);
 
 
     dropButtons->SetSizer(bSizer1);
@@ -270,4 +280,17 @@ void MyFrame::SymbolAnalysisJsonlFile(wxCommandEvent &event)
 {
     SymboltoJson symJson;
     symJson.SymboltoJsonl();
+}
+
+void MyFrame::AnalysisSangleLCSym(wxCommandEvent &event)
+{
+    AnalysisLCSymbol LCSym;
+    LCSym.AnalysisSangleLCSymbol();
+}
+
+
+void MyFrame::ConvertAltiumFootprint(wxCommandEvent &event)
+{
+    ConvertAltiumFp AltFp;
+    AltFp.ConvertAltiumFootprint();
 }

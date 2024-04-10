@@ -1,0 +1,21 @@
+kicad-cli 命令执行失败。返回码：1
+cmd命令："E:\SourceKicad8.0\kicad\build\out\bin\kicad-cli.exe" fp convert -o C:\Users\haf\Desktop\kicad_fp "C:\Users\haf\Desktop\altium_fp\MCC-DO-214AC.PcbLib"
+系统错误信息：Bad file descriptor
+kicad-cli 命令执行失败。返回码：1
+cmd命令："E://SourceKicad8.0//kicad//build//out//bin//kicad-cli.exe" fp convert -o C://Users//haf//Desktop//kicad_fp "C:\Users\haf\Desktop\altium_fp\AVAG-C170.PcbLib"
+系统错误信息：Bad file descriptor
+kicad-cli 命令执行失败。返回码：1
+cmd命令："E://SourceKicad8.0//kicad//build//out//bin//kicad-cli.exe" fp convert -o C://Users//haf//Desktop//kicad_fp "C:\Users\haf\Desktop\altium_fp\Box Headers WR-BHD_2.54 mm.PcbLib"
+系统错误信息：Bad file descriptor
+kicad-cli 命令执行失败。返回码：1
+cmd命令："E://SourceKicad8.0//kicad//build//out//bin//kicad-cli.exe" fp convert -o C://Users//haf//Desktop//kicad_fp "C:\Users\haf\Desktop\altium_fp\CTS-L500HW320H105-4.PcbLib"
+系统错误信息：Bad file descriptor
+kicad-cli 命令执行失败。返回码：1
+cmd命令："E://SourceKicad8.0//kicad//build//out//bin//kicad-cli.exe" fp convert -o C://Users//haf//Desktop//kicad_fp "C:\Users\haf\Desktop\altium_fp\Female Connectors WR-DSUB.PcbLib"
+系统错误信息：Bad file descriptor
+kicad-cli 命令执行失败。返回码：1
+cmd命令："E://SourceKicad8.0//kicad//build//out//bin//kicad-cli.exe" fp convert -o C://Users//haf//Desktop//kicad_fp "C://Users//haf//Desktop//altium_fp//AVAG-C170.PcbLib"
+系统错误信息：Bad file descriptor
+kicad-cli 命令执行失败。返回码：1
+cmd命令："E://SourceKicad8.0//kicad//build//out//bin//kicad-cli.exe" fp convert -o C://Users//haf//Desktop//kicad_fp "C://Users//haf//Desktop//altium_fp//Box Headers WR-BHD_2.54 mm.PcbLib"
+系统错误信息：Bad file descriptor

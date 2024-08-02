@@ -17,11 +17,12 @@ public:
 
     void AnalysisSangleLCSymbol();
     
-    // 计算哈希值的函数
-    size_t hashVecString(const std::vector<std::string>& vec);
-    
+    bool isNumber(const std::string& str);
+
+    void moveFiles(const std::vector<std::string>& fileList, const std::string& targetFolder);
+
     //解析立创EDA symbol文件
-    std::vector<std::string> importLCSYM( std::string strInFileFullPath, int fileType = 0 );
+    std::vector<std::vector<std::string>> importLCSYM( std::string strInFileFullPath, int fileType = 0 );
 
 
     std::string replaceAll(std::string str, const std::string& from, const std::string& to);
@@ -44,8 +45,10 @@ private:
     // //存储读取的每行数据
     // std::vector<std::string> vecLCSYMLines;
     // 文件名
-    std::string strSYMName;
+    std::string SYMFileName;
     std::string symbolName;
+
+    std::vector<std::string> pinOfvecSplits;
 
 };
 

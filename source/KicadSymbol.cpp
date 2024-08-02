@@ -166,7 +166,7 @@ void KicadSymbol::AnalysistoTrainSymbol()
             std::string strInFileFullPath = files[i].ToStdString() ;
             ifstream readFile, readFile1;
             readFile.open( strInFileFullPath, ios::in );
-            readFile1.open( strInFileFullPath, ios::in );
+            // readFile1.open( strInFileFullPath, ios::in );
 
             std::vector<std::vector<std::string>> vecSYMLine;  // Vector of vectors to store multiple blocks
             std::vector<std::string> currentBlock;  // Vector to store the current block

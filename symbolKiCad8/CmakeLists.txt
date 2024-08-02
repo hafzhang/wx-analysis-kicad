@@ -1,0 +1,23 @@
+
+project(CALCLIB)
+
+aux_source_directory(./ SRC)
+
+include_directories(${HEAD_PATH})
+
+set(LIBRARY_OUTPUT_PATH ${LIB_PATH})
+
+set(SRCS Kicad8SymboltoTrainPin.cpp
+    LCSYMSort.cpp  Kicad8SymboltoTrainTestPin.cpp
+    )
+
+add_library(symbolKiCad8 STATIC ${SRC})
+
+find_package(wxWidgets REQUIRED COMPONENTS core base)
+
+# 包含wxWidgets提供的CMake脚本
+include(${wxWidgets_USE_FILE})
+
+# 将 wxWidgets_LIBRARIES 链接到
+target_link_libraries(symbolKiCad8 PRIVATE  ${wxWidgets_LIBRARIES})
+

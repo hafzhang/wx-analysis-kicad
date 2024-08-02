@@ -12,8 +12,12 @@
 #include <wx/button.h>
 #include <wx/msgdlg.h>
 #include <functional>
+#include <filesystem>
+#include <cctype> // 包含isdigit()函数的头文件
 
 #include"AnalysisLCSymbol.h"
+
+namespace fs = std::filesystem; 
 
 using namespace std;
 
@@ -30,61 +34,79 @@ void AnalysisLCSymbol::AnalysisSangleLCSymbol()
 {
     wxString selectImportDir = OpenDirDialog( "Select Import Direction" );
     wxArrayString files = GetAllFilesInDir( selectImportDir );
+    std::string selectExportDir = OpenDirDialog( "Select Export Direction" ).ToStdString();
     
-    // std::ofstream csvFile("C://Users//haf//Desktop//lc_symbol.csv");
+    // std::ofstream csvFile("C://Users//haf//Desktop//lc_symbol.txt");
     // if (!csvFile.is_open()) {
     //     std::cerr << "Error creating output file\n";
     //     return;
     // }
-    // // csvFile << "symbol | hashValue\n";
-    // csvFile << "symbol , hashValue\n";
+    // csvFile << "symbol | hashValue\n";
+    // csvFile << "file name, Symbol, Pin Count , Pin Number \n";
+    // csvFile << "file name | Pin Number\n";
 
-
-    for( int i = 0; i < files.size(); i++ ){
+    // 获取源文件夹中所有符合条件的文件路径
+    std::vector<std::string> fileList;
+    // int PinNumber = 0;
+    for( const auto& filePath : files ){
         
-        if( files[i].Contains( ".esym" ) ){
-           std::vector<std::string> vecPINLines  = importLCSYM( files[i].ToStdString() );
-
-// -------------写入文件-------------
-
-            std::string outputFilePath = "C://Users//haf//Desktop//symbol1//" +  symbolName + ".esym";
-            std::ofstream outputFile(outputFilePath);
-
-            if ( outputFile.is_open() ) {
-                for (const auto& lines : vecPINLines) {
-                    outputFile << lines << '\n';
-                }
+        if( filePath.Contains( ".esym" ) ){
+           std::vector<std::vector<std::string>> vecPinsInfo  = importLCSYM( filePath.ToStdString() );
+            if( vecPinsInfo.size() >150 )
+            {
+                fileList.push_back(filePath.ToStdString());
+                // csvFile << SYMFileName<<", "<< vecPinsInfo.size() << "\n";
+  
             }
-            outputFile.close();
-
-            // // -------------计算hash值-------------
-            // size_t hashValue = hashVecString(vecLCSYMLines);
-            // if(hashValue != 0){
-            //     // csvFile << symbolName << "|" << hashValue << "\n";
-            //     csvFile << symbolName << " , " << hashValue << "\n";
+            // bool pinNUmberDigital = true;
+            // string pinNumber = "";
+            // for (const auto& singlePinInfo : vecPinsInfo){
+            //     pinNumber = singlePinInfo[1] ;
+            //     if (! isNumber(pinNumber)) pinNUmberDigital = false;
             // }
+            
+            // if(pinNUmberDigital == false ){
+            //     fileList.push_back(filePath.ToStdString());
+            //     csvFile << SYMFileName<<", "<< vecPinsInfo.size() << ", "<< pinNumber << "\n";
+            // }
+
         }
     }
+
     // csvFile.close();
-    wxMessageBox( wxT("This parsing is finished."), wxT("This is the title"), wxICON_INFORMATION);
+
+    moveFiles(fileList, selectExportDir);
+    wxMessageBox( wxT("This moveFiles is finished."), wxT("This is the title"), wxICON_INFORMATION);
 }
 
-
-// 计算哈希值的函数
-size_t AnalysisLCSymbol::hashVecString(const std::vector<std::string>& vec) {
-    // 将所有字符串连接起来形成一个大字符串
-    std::string concatenatedString;
-    for (const auto& str : vec) {
-        concatenatedString += str;
+bool AnalysisLCSymbol::isNumber(const std::string& str) {
+    for (char ch : str) {
+        if (!std::isdigit(ch)) {
+            return false;
+        }
     }
-    // 使用标准库中的哈希函数对象 std::hash 计算字符串的哈希值
-    std::hash<std::string> hasher;
-    return hasher(concatenatedString);
+    return true;
 }
 
+
+void AnalysisLCSymbol::moveFiles(const std::vector<std::string>& fileList, const std::string& targetFolder) {
+    for (const auto& filePath : fileList) {
+        try {
+            // 构造目标文件路径
+            std::string targetPath = targetFolder + "/" + fs::path(filePath).filename().string();
+
+            // 移动文件
+            fs::rename(filePath, targetPath);
+
+            std::cout << "Moved file: " << filePath << " to: " << targetPath << std::endl;
+        } catch (const std::exception& e) {
+            std::cerr << "Error moving file: " << e.what() << std::endl;
+        }
+    }
+}
 
 //解析立创EDA symbol文件
-std::vector<std::string> AnalysisLCSymbol::importLCSYM( std::string strInFileFullPath, int fileType )
+std::vector<std::vector<std::string>> AnalysisLCSymbol::importLCSYM( std::string strInFileFullPath, int fileType )
 {
 
     //分割symbol文件路径，获取文件名
@@ -92,12 +114,12 @@ std::vector<std::string> AnalysisLCSymbol::importLCSYM( std::string strInFileFul
     std::string              strSYMFileName = vecStrTemp.back();
     ifstream readFile;
     // 获取SYMBOL名，并新建symbol
-    // wxString strSYMName = "";
+    SYMFileName = "";
     size_t lastDotPos = strSYMFileName.find_last_of( '.' );
     // 使用 substr 函数截取子字符串
-    strSYMName = std::string(wxString( strSYMFileName.substr( 0, lastDotPos ).c_str(), wxConvUTF8 ).ToStdString());
+    SYMFileName = std::string(wxString( strSYMFileName.substr( 0, lastDotPos ).c_str(), wxConvUTF8 ).ToStdString());
 
-
+    std::vector<std::vector<std::string>> allPinsInfo;
     // //存储读取的每行数据
     std::vector<std::string> vecLCSYMLines;
     std::vector<std::string> vecPINLines;
@@ -119,40 +141,30 @@ std::vector<std::string> AnalysisLCSymbol::importLCSYM( std::string strInFileFul
             vecLCSYMLines.push_back( str );
         }
         for( int i = 0; i < vecLCSYMLines.size(); i++ ){
-            // if(vecLCSYMLines[i].find( "PART" ) != std::string::npos){
-                
-            //     vecPINLines.push_back(vecLCSYMLines[i]);
-            // }
-            // else 
-            if(vecLCSYMLines[i].find( "PIN" ) != std::string::npos){
-                
-                vecPINLines.push_back(vecLCSYMLines[i]);
-                vecPINLines.push_back(vecLCSYMLines[i+1]);
-                // vecPINLines.push_back(vecLCSYMLines[i+2]);
-                // i += 2;
-                ++i ;
+            string strLine = vecLCSYMLines[i];
+            //去除首尾的 "[]" 和 "\""
+            strLine = spp( strLine, "[", "" );
+            strLine = spp( strLine, "]", "" );
+            strLine = spp( strLine, "\"", "" );
+            strLine = spp( strLine, "{", "" );
+            strLine = spp( strLine, "}", "" );
+            strLine = spp( strLine, "\r", "" );
+            strLine = spp( strLine, ":", "," );
 
+
+            vector<string> vecSplit = Split( strLine, "," );
+
+            //去除双引号
+            vecStrAnalyse( vecSplit );
+
+            //筛除无效数据
+            if( 1 > vecSplit.size() )
+            {
+                continue;
             }
-            // if( vecLCSYMLines[i].find( "LINESTYLE" ) != std::string::npos ){
-            //     // 删除找到的行
-            //     vecLCSYMLines.erase(vecLCSYMLines.begin() + i);
-            //     // vecLCSYMLines.erase(vecLCSYMLines.begin() + i + 1);
-            //     // 因为删除了一行，所以下一个要处理的行索引不变
-            //     --i;
-            //     // i -= 2;
-            // }
 
-            if(vecLCSYMLines[i].find( "PART" ) != std::string::npos){
-                // std::vector<std::string> vecStr;
-                std::string strLine= vecLCSYMLines[i];
-
-                //去除首尾的 "[]" 和 "\""
-                strLine = spp( strLine, "[", "" );
-                strLine = spp( strLine, "]", "" );
-                strLine = spp( strLine, "\"", "" );
-                vector<string> vecSplit = Split( strLine, "," );
-                //去除双引号
-                vecStrAnalyse( vecSplit );
+            if(vecSplit[0].find( "PART" ) != std::string::npos){
+  
                 // wxString wxName  = wxString( vecStr[0].c_str(), wxConvUTF8 );
                     // 找到第一个逗号和双引号之间的子字符串
                 wxString wxName = wxString( vecSplit[1].c_str(), wxConvUTF8 ); 
@@ -180,12 +192,39 @@ std::vector<std::string> AnalysisLCSymbol::importLCSYM( std::string strInFileFul
 
                 symbolName = "";
                 symbolName = std::string(wxName.ToStdString());
-
-                // 删除找到的行，及其后两行
-                vecLCSYMLines.erase(vecLCSYMLines.begin() + i, vecLCSYMLines.begin() + i + 3);
-                // 删除三行后，下一个要处理的行索引需要减去删除的行数
-                i -= 3;
             }
+            else if( strLine.size() > vecSplit[0].find( "PIN" ) )
+            {
+                continue;
+            }
+            else if( strLine.find( "ATTR" ) != std::string::npos
+                     && ( vecSplit[3].find( "NAME" ) != std::string::npos
+                          || vecSplit[3].find( "NUMBER" ) != std::string::npos
+                          || vecSplit[3].find( "Pin Type" ) != std::string::npos ) )
+            {
+                if( vecSplit[3] == "NAME" )
+                {
+                    
+                    pinOfvecSplits.push_back( vecSplit[4] );
+                }
+                else if( vecSplit[3] == "NUMBER" )
+                {
+                    pinOfvecSplits.push_back( vecSplit[4] );
+                }
+                else if( vecSplit[3] == "Pin Type" )
+                {
+                    pinOfvecSplits.push_back( vecSplit[4] );
+
+                }
+            }
+
+            //存储引脚数据
+            if( pinOfvecSplits.size() == 3 )
+            {
+                allPinsInfo.push_back( pinOfvecSplits );
+                pinOfvecSplits.clear();
+            }
+
         }
     
     }
@@ -193,7 +232,7 @@ std::vector<std::string> AnalysisLCSymbol::importLCSYM( std::string strInFileFul
     readFile.close();
 
     //判断标识执行是否成功
-    return vecPINLines;
+    return allPinsInfo;
 }
 
 

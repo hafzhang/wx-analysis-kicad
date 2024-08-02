@@ -1,0 +1,32 @@
+# 设置项目名称
+# project(CALCLIB)
+
+# 提供了 generate_export_header 函数。
+# include(GenerateExportHeader)
+
+# 设置包含头文件的路径，假设头文件在 ${HEAD_PATH} 中
+include_directories(${HEAD_PATH})
+
+# 设置库的生成路径，假设库生成在 ${LIB_PATH} 中
+set(LIBRARY_OUTPUT_PATH ${LIB_PATH})
+
+
+
+add_library(sexpr_parser sexpr_parse.cpp 
+        sexpr_parser.cpp profile.cpp sexpr.cpp
+        utility_program.cpp
+)
+
+
+add_library(myproject::sexpr_parser ALIAS sexpr_parser)
+
+
+# # 生成静态库，假设静态库名为 sexpr_parser
+# add_library(sexpr_parser STATIC ${SRC})
+
+# 链接 wxWidgets 库
+find_package(wxWidgets REQUIRED)
+include(${wxWidgets_USE_FILE})
+
+# 将 wxWidgets_LIBRARIES 链接到 CALCLIB
+target_link_libraries(sexpr_parser PRIVATE ${wxWidgets_LIBRARIES})

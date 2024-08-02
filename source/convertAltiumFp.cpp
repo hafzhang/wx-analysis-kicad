@@ -15,6 +15,7 @@
 
 #include <cstdlib> // 包含 system 函数所在的头文件
 #include <cerrno>  // 包含 errno 变量所在的头文件
+#include <cstdio> 
 
 #include"ConvertAltiumFp.h"
 
@@ -48,29 +49,21 @@ void ConvertAltiumFp::ConvertAltiumFootprint()
 
     // -------------写入cmd-------------
 
-            // 定义 kicad-cli 命令
-            // std::string kicadCliCommand = kicadCommandPromptPath +
-            // "  fp convert -o C:\\Users\\haf\\Desktop\\kicad_fp  " + fnPathStr;
-            // std::string kicadCliCommand =
-            // "\"" + kicadCommandPromptPath + "\" fp convert -o C:\\Users\\haf\\Desktop\\kicad_fp \"" + fnPathStr + "\"";
-            // // 调用 kicad-cli 
-            // const char* commandStr = kicadCliCommand.c_str();
-
             std::string kicadCliCommand = "\"E://SourceKicad8.0//kicad//build//out//bin//kicad-cli.exe\" fp convert -o C://Users//haf//Desktop//kicad_fp \"C://Users//haf//Desktop//altium_fp//Box Headers WR-BHD_2.54 mm.PcbLib\"";    
             const char* commandStr = kicadCliCommand.c_str();
 
-            FILE* pipe = popen(commandStr, "w");
+            // FILE* pipe = popen(commandStr, "w");
 
-            if (pipe) {
-                // 向管道中写入命令
-                fprintf(pipe, "%s\n", commandStr);
-                // 关闭管道
-                pclose(pipe);
-            } else {
-                // 处理管道打开失败的情况
-                std::cerr << "Failed to open pipe for command execution" << std::endl;
-            }
-            // int returnCode = system(commandStr);
+            // if (pipe) {
+            //     // 向管道中写入命令
+            //     fprintf(pipe, "%s\n", commandStr);
+            //     // 关闭管道
+            //     pclose(pipe);
+            // } else {
+            //     // 处理管道打开失败的情况
+            //     std::cerr << "Failed to open pipe for command execution" << std::endl;
+            // }
+            int returnCode = system(commandStr);
             // 检查返回值
             if (returnCode != 0) {
                 // 打开文件流，准备写入错误信息

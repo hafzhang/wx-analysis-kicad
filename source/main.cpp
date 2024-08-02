@@ -24,6 +24,12 @@
 #include "SymboltoJson.h"
 #include "analysisLCSymbol.h"
 #include"ConvertAltiumFp.h"
+#include "Kicad80Symbol.h"
+#include "SortLCSymbolInfo.h"
+#include "..//symbolKiCad8//Kicad80SymbolProperty.h"
+#include "..//symbolKiCad8//Kicad8SymboltoTrainPin.h"
+#include "..//symbolKiCad8//Kicad8SymboltoTrainTestPin.h"
+
 
 #define wxID_UNITS_INCHES 1
 #define wxID_UNITS_MM 2
@@ -53,7 +59,12 @@ private:
     void AnalysisSangleLCSym(wxCommandEvent &event);
     void ConvertAltiumFootprint(wxCommandEvent &event);
 
+    void SortLCSymbolHashValue(wxCommandEvent &event);
 
+    void AnalysisKicad8toTrainSymbol(wxCommandEvent &event);
+    void AnalysisKicad8SymbolProperty(wxCommandEvent &event);
+    void AnalysisKicad8SymboltoTrainPin(wxCommandEvent &event);
+    void AnalysisKicad8SymboltoTestPin(wxCommandEvent &event);
 
 
 
@@ -74,6 +85,13 @@ private:
     wxButton* transition;
     wxButton* LCSymbol;
     wxButton* AltFootprint;
+
+    wxButton* LCsymHash;
+
+    wxButton* k8Sym;
+    wxButton* SymPreporty;
+    wxButton* TrainPin;
+    wxButton* TestPin;
 
     wxComboBox* m_comboBox1;
     wxCheckBox* m_checkBox1;
@@ -96,7 +114,7 @@ bool MyApp::OnInit()
 MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
     : wxFrame(NULL, wxID_ANY, title, pos, size)
 {
-    auto tabs = new wxListbook(this, wxID_ANY, wxDefaultPosition, this->FromDIP(wxSize(640, 480)), wxNB_TOP);
+    auto tabs = new wxListbook(this, wxID_ANY, wxDefaultPosition, this->FromDIP(wxSize(460, 640)), wxNB_TOP);
     tabs->SetInternalBorder(0);
 
     wxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
@@ -157,6 +175,7 @@ MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
     toJsonl = new wxButton(dropButtons, wxID_ANY, wxT("symbol analysis jsonl file"), wxDefaultPosition, wxDefaultSize, 0);
     toJsonl->Bind(wxEVT_BUTTON, &MyFrame::SymbolAnalysisJsonlFile, this);
     bSizer1->Add(toJsonl, 0, wxALL, 5);
+    bSizer1->AddSpacer(15); 
 
     LCSymbol = new wxButton(dropButtons, wxID_ANY, wxT("LC symbol Analytical simplification"), wxDefaultPosition, wxDefaultSize, 0);
     LCSymbol->Bind(wxEVT_BUTTON, &MyFrame::AnalysisSangleLCSym, this);
@@ -167,11 +186,32 @@ MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
     bSizer1->Add(AltFootprint, 0, wxALL, 5);
 
 
+    LCsymHash = new wxButton(dropButtons, wxID_ANY, wxT("Calculate LC symbol info hash value"), wxDefaultPosition, wxDefaultSize, 0);
+    LCsymHash->Bind(wxEVT_BUTTON, &MyFrame::SortLCSymbolHashValue, this);
+    bSizer1->Add(LCsymHash, 0, wxALL, 5);
+    bSizer1->AddSpacer(15); 
+
+    k8Sym = new wxButton(dropButtons, wxID_ANY, wxT("analysis kicad8 single train symbol"), wxDefaultPosition, wxDefaultSize, 0);
+    k8Sym->Bind(wxEVT_BUTTON, &MyFrame::AnalysisKicad8toTrainSymbol, this);
+    bSizer1->Add(k8Sym, 0, wxALL, 5);
+
+    SymPreporty = new wxButton(dropButtons, wxID_ANY, wxT("analysis kicad8 symbol property"), wxDefaultPosition, wxDefaultSize, 0);
+    SymPreporty->Bind(wxEVT_BUTTON, &MyFrame::AnalysisKicad8SymbolProperty, this);
+    bSizer1->Add(SymPreporty, 0, wxALL, 5);
+    bSizer1->AddSpacer(15); 
+
+    TrainPin = new wxButton(dropButtons, wxID_ANY, wxT("analysis kicad8 symbol to train pin"), wxDefaultPosition, wxDefaultSize, 0);
+    TrainPin->Bind(wxEVT_BUTTON, &MyFrame::AnalysisKicad8SymboltoTrainPin, this);
+    bSizer1->Add(TrainPin, 0, wxALL, 5);
+
+    TestPin = new wxButton(dropButtons, wxID_ANY, wxT("analysis kicad8 symbol to train pin"), wxDefaultPosition, wxDefaultSize, 0);
+    TestPin->Bind(wxEVT_BUTTON, &MyFrame::AnalysisKicad8SymboltoTestPin, this);
+    bSizer1->Add(TestPin, 0, wxALL, 5);
+
     dropButtons->SetSizer(bSizer1);
     tabs->AddPage(dropButtons, "drop-down");
     tabs->SetSelection(1);
     this->SetSizerAndFit(mainSizer);  
-
 
 
     CreateStatusBar(1);
@@ -251,6 +291,7 @@ wxPanel *MyFrame::dropDownPanel(wxWindow* parent)
     return panel;
 }
 
+
 void MyFrame::AnalysistoTrainSymbol(wxCommandEvent &event)
 {
     KicadSymbol SYMT;
@@ -294,3 +335,36 @@ void MyFrame::ConvertAltiumFootprint(wxCommandEvent &event)
     ConvertAltiumFp AltFp;
     AltFp.ConvertAltiumFootprint();
 }
+
+void MyFrame::SortLCSymbolHashValue(wxCommandEvent &event)
+{
+    SortLCSymbolInfo LCSymHash;
+    LCSymHash.AnalysisSangleLCSymbol();
+}
+
+void MyFrame::AnalysisKicad8toTrainSymbol(wxCommandEvent &event)
+{
+    Kicad80Symbol SYM8;
+    SYM8.AnalysisKicad8toTrainSymbol();
+}
+
+
+void MyFrame::AnalysisKicad8SymbolProperty(wxCommandEvent &event)
+{
+    Kicad80SymbolProperty Ki8Pro;
+    Ki8Pro.AnalysisKicad8SymbolProperty();
+}
+
+void MyFrame::AnalysisKicad8SymboltoTrainPin(wxCommandEvent &event)
+{
+    Kicad8SymboltoTrainPin Ki8toPin;
+    Ki8toPin.SymboltoJsonl();
+}
+
+void MyFrame::AnalysisKicad8SymboltoTestPin(wxCommandEvent &event)
+{
+    Kicad8SymboltoTrainTestPin Ki8TestPin;
+    Ki8TestPin.SymboltoJsonl();
+}
+
+

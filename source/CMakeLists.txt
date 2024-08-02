@@ -8,9 +8,11 @@ find_package(wxWidgets REQUIRED)
 
 set(SRCS main.cpp 
     drawingcanvas.cpp chartcontrol.cpp
+    Kicad80Symbol.cpp 
     KicadSymbol.cpp KicadFootprint.cpp 
     SymboltoJson.cpp analysisLCSymbol.cpp
-    convertAltiumFp.cpp
+    convertAltiumFp.cpp 
+    LCSYMSort.cpp SortLCSymbolInfo.cpp
     )
 
 include(${wxWidgets_USE_FILE})
@@ -22,4 +24,9 @@ else()
     add_executable(main WIN32 ${SRCS} main.exe.manifest)
 endif()
 
-target_link_libraries(main PRIVATE ${wxWidgets_LIBRARIES})
+target_link_libraries(main PRIVATE 
+                ${wxWidgets_LIBRARIES}
+                myproject::sexpr_parser
+                symbolKiCad8
+                )
+

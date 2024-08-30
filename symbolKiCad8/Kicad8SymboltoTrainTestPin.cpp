@@ -27,6 +27,7 @@
 
 #include "../sexpr_parser/sexpr_parser.h"
 #include "../sexpr_parser/sexpr.h"
+#include "SymbolCommonMethod.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -75,101 +76,116 @@ void Kicad8SymboltoTrainTestPin::SymboltoJsonl()
         std::cerr << "Error creating output file\n";
         return;
     }
+
+    string move_path = "C://Users//haf//Desktop//kicad_related_file//easyeda_kicad_mod_20240704//doweight_symbol";
+    std::vector<std::string> fileLists12;
+    fileLists12.reserve(100);
+    std::map< string, std::vector<std::string> > symbolDoWeight;
     for( int i = 0; i < files.size(); i++ ){
+         if (i == files.size() - 1) {
+            std::cout << "Processing the last file: " << files[i] << std::endl;
+         }
 
         if( files[i].Contains( ".kicad_sym" ) ){
             wxString strInFileFullPath = files[i];
+            std::vector<std::string> vecStrTemp = Split(  strInFileFullPath.ToStdString(), "\\" );
+            if (vecStrTemp.empty())
+                continue;
+            std::string  strSYMFileName = vecStrTemp.back();
+                // 获取SYMBOL名，并新建symbol
+            size_t lastDotPos = strSYMFileName.find_last_of( '.' );
+            // 使用 substr 函数截取子字符串
+            string SYMFileName = strSYMFileName.substr( 0, lastDotPos );
+            
+
+            std::vector<std::string> voltageSources = {"VCC", "VDD", "+5V", "+12V", "5V", "12V", "VD", "VPP", "VCCQ",
+                "GND", "VSS", "VSSA", "AGND", "DGND", "PGND", "GROUND" };
 
             if( true )
             {
-
                 SymbolInfo symbolInfo = parseSymbolInfo(strInFileFullPath);
-
                 size_t num_elements = symbolInfo.wholePinsNameNum.size();
-                if(num_elements > 200 || num_elements <6)
-                    continue;
-
-                bool skipNext = false;
-                for (auto it = symbolInfo.wholePinsNameNum.begin(); it != symbolInfo.wholePinsNameNum.end() &&
-                 std::distance( symbolInfo.wholePinsNameNum.begin() ,it ) < 3 ; ++it) {
-                    if (!it->second.empty() && std::all_of(it->second.begin(), it->second.end(), 
-                                           [](char c) { return std::isdigit(c); })) 
-                    {
-                        skipNext = true;
-                        break;
-                    }
-                }
-                if (skipNext) {
-                    continue; // 跳过外层循环的下一次迭代
-                }
-                
-                std::vector<std::vector<std::string>> pinOutInfo = analysisPinCoord(symbolInfo.wholePinsCoord);
-                // if(deWeightPinOut == pinOutInfo){
+                // if(num_elements <1 )
                 //     continue;
-                // }
-                // deWeightPinOut = pinOutInfo;
-                
-                bool containsVBar = false;
-                bool allSingleElement = true;
-                for (const auto& innerVec : pinOutInfo) {
-                    if (innerVec.size() > 1) {
-                        allSingleElement = false;
-                    }
-                    for (const auto& str : innerVec) {
-                        if (str == ("/v")) {
-                            containsVBar = true;
-                            std::cout << "Found '/v' in the string: " << str << std::endl;
-                            break; 
-                        }
 
+                std::vector<std::vector<std::string>> pinOutInfo = analysisPinCoord(symbolInfo.wholePinsCoord);
+
+                for ( auto& innerVec : pinOutInfo) {
+                    for (auto it = innerVec.begin(); it != innerVec.end(); ++it) {
+                        if (*it == "/v") {
+                            std::cout << "Found '/v' in the string: " << *it << std::endl;
+                            break; 
+                        } 
                     }
-                    if (containsVBar) {
-                        break; 
-                    }
-                }
-                if(allSingleElement){
-                    continue;
-                }
-                if (containsVBar) {
-                    continue; 
                 }
 
                 std::stringstream in,out ;
+                std::set<string> deWeightPin;
                 auto it_end = symbolInfo.wholePinsNameNum.end();
-                for (auto it = symbolInfo.wholePinsNameNum.begin(); it != symbolInfo.wholePinsNameNum.end(); ++it) {
-                    in << it->second << ",";
+                // for (auto it = symbolInfo.wholePinsNameNum.begin(); it != symbolInfo.wholePinsNameNum.end(); ++it) {
 
+                //     // if (std::find(voltageSources.begin(), voltageSources.end(), it->second) != voltageSources.end()) {
+                //     //     continue;  // 如果 it->second 是 voltageSources 的成员，跳过当前迭代
+                //     // }
+                //     deWeightPin.insert(it->second);
+                // }
+
+                // for (const std::string& pin : deWeightPin) {
+                //     in << pin << ",";
+                // }
+                for (const auto &pair : symbolInfo.wholePinsNameNum){
+                    in << pair.first << ","<<pair.second << ",";
                 }
                 std::string user_content = in.str();
+                if (user_content.size() > 220) {
+                }
                 if (!user_content.empty() && user_content.back() == ',') {
                     user_content.erase(user_content.size() - 1); // 去掉最后一个逗号
                 }
-
-                // for (const std::string& pinOut : pinOutInfo) {
-                //     out << pinOut << "|";
+                // std::string assistant_content = vectorToString(pinOutInfo);
+                // if (assistant_content.size() > 1024) {
+                //     std::cout << "字符串长度大于2KB" << std::endl;
+                //     continue; // 假设返回1表示长度大于2KB
                 // }
-                // std::string assistant_content = out.str();
-                std::string assistant_content = vectorToString(pinOutInfo);
-                if (assistant_content.size() > 512) {
-                        std::cout << "字符串长度大于2KB" << std::endl;
-                       continue; // 假设返回1表示长度大于2KB
+                std::string assistant_content ="";
+
+                // 检查键是否存在
+                auto it = symbolDoWeight.find(user_content);
+                if (it == symbolDoWeight.end()) {
+                    symbolDoWeight[user_content] = {SYMFileName}; 
+                    fileLists12.push_back(strInFileFullPath.ToStdString());
+                    if(fileLists12.size() >= 100) {
+                        moveFiles(fileLists12, move_path);
+                        fileLists12.clear(); // 重置列表
+                    }
+                    std::cout << "字符串长度大于2KB" << std::endl;
+                    continue; // 假设返回1表示长度大于2KB
+                } else {
+                    // 键存在，直接在向量上添加值
+                    it->second.push_back(SYMFileName);
                 }
-                // std::string assistant_content = out.str();
-                // std::string assistant_content ="";
+                // Document data;
+                // data.SetObject();
 
-                Document data;
-                data.SetObject();
+                // rapidjson::Value valFileName(rapidjson::kStringType);
+                // valFileName.SetString( SYMFileName.c_str() , SYMFileName.size());
+                // data.AddMember("fileName", valFileName, data.GetAllocator());
 
 
-                rapidjson::Value valSymbol(rapidjson::kStringType);
-                valSymbol.SetString( symbolInfo.symbolName.c_str() , symbolInfo.symbolName.size());
-                data.AddMember("symbol", valSymbol, data.GetAllocator());
+                // rapidjson::Value valSymbol(rapidjson::kStringType);
+                // valSymbol.SetString( symbolInfo.symbolName.c_str() , symbolInfo.symbolName.size());
+                // data.AddMember("symbol", valSymbol, data.GetAllocator());
 
-                rapidjson::Value inPin(rapidjson::kStringType);
-                inPin.SetString( user_content.c_str() , user_content.size());
-                data.AddMember("in",inPin, data.GetAllocator());
+                // rapidjson::Value symbolReference(rapidjson::kStringType);
+                // symbolReference.SetString( symbolInfo.symbolReference.c_str() , symbolInfo.symbolReference.size());
+                // data.AddMember("reference", symbolReference, data.GetAllocator());
+
+                // rapidjson::Value inPin(rapidjson::kStringType);
+                // inPin.SetString( user_content.c_str() , user_content.size());
+                // data.AddMember("in",inPin, data.GetAllocator());
 
                 // rapidjson::Value nnArray(rapidjson::kArrayType);
+
                 // for (auto it = symbolInfo.wholePinsNameNum.begin(); it != symbolInfo.wholePinsNameNum.end(); ++it) {
                 //     rapidjson::Value pair(rapidjson::kObjectType);
                 //     pair.AddMember("key", rapidjson::Value( it->second.c_str(), data.GetAllocator()).Move(), data.GetAllocator());
@@ -179,21 +195,51 @@ void Kicad8SymboltoTrainTestPin::SymboltoJsonl()
                 // data.AddMember("number-name",nnArray, data.GetAllocator());
 
 
-                rapidjson::Value outArray(rapidjson::kStringType);
-                outArray.SetString( assistant_content.c_str() , assistant_content.size());
-                data.AddMember("out", outArray, data.GetAllocator());
+                // rapidjson::Value outArray(rapidjson::kStringType);
+                // outArray.SetString( assistant_content.c_str() , assistant_content.size());
+                // data.AddMember("out", outArray, data.GetAllocator());
 
 
-                StringBuffer buffer;
-                Writer<StringBuffer> writer(buffer);
-                data.Accept(writer);
+                // StringBuffer buffer;
+                // Writer<StringBuffer> writer(buffer);
+                // data.Accept(writer);
 
-                pF << buffer.GetString() << std::endl;
-                
+                // pF << buffer.GetString() << std::endl;
             }
         }
     }
+
+
+    
+    for (auto it = symbolDoWeight.begin(); it != symbolDoWeight.end(); ++it) {
+        // Document data;
+        // data.SetObject();
+        rapidjson::Document data(rapidjson::kArrayType); // 初始化为一个空对象
+        rapidjson::Document::AllocatorType& allocator = data.GetAllocator(); // 
+        // rapidjson::Value data(rapidjson::kArrayType);
+        rapidjson::Value pair(rapidjson::kObjectType);
+        pair.AddMember("Pins", rapidjson::Value(it->first.c_str(), data.GetAllocator()).Move(), data.GetAllocator());
+        pair.AddMember("Filename", rapidjson::Value(it->second[0].c_str(), data.GetAllocator()).Move(), data.GetAllocator());
+        string pinsArray;
+        for (const auto& pinName : it->second) {
+            pinsArray.append(pinName);
+            pinsArray.append(",");
+        }
+        pair.AddMember("FilenameWeight", rapidjson::Value( pinsArray.c_str(), data.GetAllocator()).Move(), data.GetAllocator());
+        data.PushBack(pair, data.GetAllocator());
+        // data.AddMember("symbol",data, data.GetAllocator());
+        StringBuffer buffer;
+        Writer<StringBuffer> writer(buffer);
+        data.Accept(writer);
+
+        pF << buffer.GetString() << std::endl;
+    }
+    
+
+
+
     pF.close();
+    moveFiles(fileLists12, move_path);
     wxMessageBox( wxT("JSONL 文件已生成."), wxT("This is the title"), wxICON_INFORMATION);
 }
 
@@ -216,6 +262,38 @@ std::string Kicad8SymboltoTrainTestPin::vectorToString(const std::vector<std::ve
     // oss << "]"; // 结束外层向量的方括号
     return oss.str();
 }
+
+
+//字符串分割
+std::vector<std::string> Kicad8SymboltoTrainTestPin::Split( std::string strContext,
+                                                     std::string StrDelimiter )
+{
+    vector<string> vecResult;
+    if( strContext.empty() )
+    {
+        return vecResult;
+    }
+    if( StrDelimiter.empty() )
+    {
+        vecResult.push_back( strContext );
+        return vecResult;
+    }
+
+    strContext += StrDelimiter;
+    int iSize = strContext.size();
+    for( int i = 0; i < iSize; i++ )
+    {
+        int iPos = strContext.find( StrDelimiter, i );
+        if( iPos < iSize )
+        {
+            string strElement = strContext.substr( i, iPos - i );
+            vecResult.push_back( strElement );
+            i = iPos + StrDelimiter.size() - 1;
+        }
+    }
+    return vecResult;
+}
+
 
 std::vector<std::vector<std::string>> Kicad8SymboltoTrainTestPin::analysisPinCoord(const std::vector<PinCoord>& wholePinsCoord){
     std::vector<std::vector<std::string>> pinOutInfo;
@@ -355,6 +433,7 @@ Kicad8SymboltoTrainTestPin::SymbolInfo Kicad8SymboltoTrainTestPin::parseSymbolIn
                 for (size_t i = 3; i < node->GetNumberOfChildren();i++ )
                 {
                     SEXPR::SEXPR* NodeOne = node->GetChild( i );
+
                     if( NodeOne->GetChild( 0 )->GetSymbol() == "symbol"  ){
                         SEXPR::SEXPR_STRING* symbolName = dynamic_cast<SEXPR::SEXPR_STRING*>( NodeOne->GetChild( 1 ) );
                         symbolInfo.symbolName = symbolName->GetString();
@@ -362,6 +441,11 @@ Kicad8SymboltoTrainTestPin::SymbolInfo Kicad8SymboltoTrainTestPin::parseSymbolIn
                         for( size_t j = 2; j< NodeOne->GetNumberOfChildren(); j++ )
                         {
                             SEXPR::SEXPR* NodeSymbolPart = NodeOne->GetChild( j );
+                            if( NodeSymbolPart->IsList() && NodeSymbolPart->GetChild(0)->IsSymbol() &&
+                            NodeSymbolPart->GetChild( 0 )->GetSymbol() == "property" &&  NodeSymbolPart->GetChild( 1 )->GetString() == "Reference" ){
+                                SEXPR::SEXPR_STRING* symbolperporty = dynamic_cast<SEXPR::SEXPR_STRING*>( NodeSymbolPart->GetChild( 2 ) );
+                                symbolInfo.symbolReference = symbolperporty->GetString();
+                            }
                             if( NodeSymbolPart->IsList() && NodeSymbolPart->GetChild(0)->IsSymbol() && 
                             NodeSymbolPart->GetChild(0)->GetSymbol() == "symbol" ){
                                 // if(NodeSymbolPart->GetChild(0)->GetSymbol() == "symbol" ){
@@ -440,9 +524,11 @@ Kicad8SymboltoTrainTestPin::SymbolInfo Kicad8SymboltoTrainTestPin::parseSymbolIn
         {
                 std::string PinName = "";
                 std::string PinNumber = "";
+                std::string PinProperty = "";
                 PinCoord pinCoord;
                 if( node->IsList() && node->GetChild(0)->IsSymbol() ){
                     if(node->GetChild(0)->GetSymbol() == "pin" ){
+                        PinProperty = node->GetChild(1)->GetSymbol();
                         for( unsigned i = 0; i < node->GetNumberOfChildren(); i++ ){
                             SEXPR::SEXPR* nodePinInfo = node->GetChild( i );
                             if( nodePinInfo->IsList() && nodePinInfo->GetChild(0)->IsSymbol() ){
@@ -456,6 +542,7 @@ Kicad8SymboltoTrainTestPin::SymbolInfo Kicad8SymboltoTrainTestPin::parseSymbolIn
                 }
                 if( !PinName.empty() && !PinNumber.empty() ){
                     symbolInfo.wholePinsNameNum.insert(std::make_pair(PinNumber, PinName));
+                    // symbolInfo.wholePinsNameNum.insert(std::make_pair(PinNumber, std::make_pair(PinName, PinProperty)));
                 }
 
         } );

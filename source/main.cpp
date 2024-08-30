@@ -29,6 +29,9 @@
 #include "..//symbolKiCad8//Kicad80SymbolProperty.h"
 #include "..//symbolKiCad8//Kicad8SymboltoTrainPin.h"
 #include "..//symbolKiCad8//Kicad8SymboltoTrainTestPin.h"
+#include "..//symbolKiCad8//Kicad8SymboltoPinFullGroup.h"
+#include "..//symbolKiCad8//Kicad8toMoveSymbolFile.h"
+#include "SortLCSymbolPinName.h"
 
 
 #define wxID_UNITS_INCHES 1
@@ -65,6 +68,9 @@ private:
     void AnalysisKicad8SymbolProperty(wxCommandEvent &event);
     void AnalysisKicad8SymboltoTrainPin(wxCommandEvent &event);
     void AnalysisKicad8SymboltoTestPin(wxCommandEvent &event);
+    void AnalysisKicad8PinFullGroup(wxCommandEvent &event);
+    void SymbolFiletoMoveOtherFolder(wxCommandEvent &event);
+    void SymbolLCSymbolPinNameNumber(wxCommandEvent &event);
 
 
 
@@ -92,6 +98,10 @@ private:
     wxButton* SymPreporty;
     wxButton* TrainPin;
     wxButton* TestPin;
+    wxButton* FullPin;
+    wxButton* MovePin;
+    wxButton* LCPinN;
+    
 
     wxComboBox* m_comboBox1;
     wxCheckBox* m_checkBox1;
@@ -114,7 +124,7 @@ bool MyApp::OnInit()
 MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
     : wxFrame(NULL, wxID_ANY, title, pos, size)
 {
-    auto tabs = new wxListbook(this, wxID_ANY, wxDefaultPosition, this->FromDIP(wxSize(460, 640)), wxNB_TOP);
+    auto tabs = new wxListbook(this, wxID_ANY, wxDefaultPosition, this->FromDIP(wxSize(360, 740)), wxNB_TOP);
     tabs->SetInternalBorder(0);
 
     wxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
@@ -204,9 +214,21 @@ MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
     TrainPin->Bind(wxEVT_BUTTON, &MyFrame::AnalysisKicad8SymboltoTrainPin, this);
     bSizer1->Add(TrainPin, 0, wxALL, 5);
 
-    TestPin = new wxButton(dropButtons, wxID_ANY, wxT("analysis kicad8 symbol to train pin"), wxDefaultPosition, wxDefaultSize, 0);
+    TestPin = new wxButton(dropButtons, wxID_ANY, wxT("analysis kicad8 symbol to test pin"), wxDefaultPosition, wxDefaultSize, 0);
     TestPin->Bind(wxEVT_BUTTON, &MyFrame::AnalysisKicad8SymboltoTestPin, this);
     bSizer1->Add(TestPin, 0, wxALL, 5);
+
+    FullPin = new wxButton(dropButtons, wxID_ANY, wxT("analysis kicad8 symbol to pin full grouping"), wxDefaultPosition, wxDefaultSize, 0);
+    FullPin->Bind(wxEVT_BUTTON, &MyFrame::AnalysisKicad8PinFullGroup, this);
+    bSizer1->Add(FullPin, 0, wxALL, 5);
+
+    MovePin = new wxButton(dropButtons, wxID_ANY, wxT("kicad8 symbol file to move other folder"), wxDefaultPosition, wxDefaultSize, 0);
+    MovePin->Bind(wxEVT_BUTTON, &MyFrame::SymbolFiletoMoveOtherFolder, this);
+    bSizer1->Add(MovePin, 0, wxALL, 5);
+
+    LCPinN = new wxButton(dropButtons, wxID_ANY, wxT("Sort LC Symbol Pin Name Number"), wxDefaultPosition, wxDefaultSize, 0);
+    LCPinN->Bind(wxEVT_BUTTON, &MyFrame::SymbolLCSymbolPinNameNumber, this);
+    bSizer1->Add(LCPinN, 0, wxALL, 5);
 
     dropButtons->SetSizer(bSizer1);
     tabs->AddPage(dropButtons, "drop-down");
@@ -367,4 +389,20 @@ void MyFrame::AnalysisKicad8SymboltoTestPin(wxCommandEvent &event)
     Ki8TestPin.SymboltoJsonl();
 }
 
+void MyFrame::AnalysisKicad8PinFullGroup(wxCommandEvent &event)
+{
+    Kicad8SymboltoPinFullGroup Ki8PinGroup;
+    Ki8PinGroup.SymboltoJsonl();
+}
 
+void MyFrame::SymbolFiletoMoveOtherFolder(wxCommandEvent &event)
+{
+    Kicad8toMoveSymbolFile Ki8Move;
+    Ki8Move.SymboltoJsonl();
+}
+
+void MyFrame::SymbolLCSymbolPinNameNumber(wxCommandEvent &event)
+{
+    SortLCSymbolPinName LCPin;
+    LCPin.AnalysisSangleLCSymbol();
+}

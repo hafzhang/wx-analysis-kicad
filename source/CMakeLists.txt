@@ -13,6 +13,7 @@ set(SRCS main.cpp
     SymboltoJson.cpp analysisLCSymbol.cpp
     convertAltiumFp.cpp 
     LCSYMSort.cpp SortLCSymbolInfo.cpp
+    SortLCSymbolPinName.cpp
     )
 
 include(${wxWidgets_USE_FILE})

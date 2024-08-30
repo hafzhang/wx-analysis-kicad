@@ -92,8 +92,8 @@ void Kicad8SymboltoTrainPin::SymboltoJsonl()
                 
                 SymbolInfo symbolInfo = parseSymbolInfo(strInFileFullPath);
                 size_t num_elements = symbolInfo.wholePinsNameNum.size();
-                if(num_elements > 180 || num_elements <5)
-                    continue;
+                // if(num_elements > 180 || num_elements <5)
+                //     continue;
 
                 bool skipNext = false;
                 for (auto it = symbolInfo.wholePinsNameNum.begin(); it != symbolInfo.wholePinsNameNum.end() ; ++it) {
@@ -130,22 +130,22 @@ void Kicad8SymboltoTrainPin::SymboltoJsonl()
                 }
 
                 ///---------------------输入去重-------------------------///
-                // bool isDuplicate = false;
-                // for (const auto& recentMap : recentPinsNameNum) {
-                //     if (symbolInfo.wholePinsNameNum == recentMap) {
-                //         isDuplicate = true;
-                //         break;
-                //     }
-                // }
-                // if (isDuplicate) {
-                //     // 如果是重复的，跳过当前 multimap
-                //     continue;
-                // }
-                // if (recentPinsNameNum.size() == 4) {
-                //     // 如果队列已满，移除最早的 multimap
-                //     recentPinsNameNum.pop_front();
-                // }
-                // recentPinsNameNum.push_back(symbolInfo.wholePinsNameNum);
+                bool isDuplicate = false;
+                for (const auto& recentMap : recentPinsNameNum) {
+                    if (symbolInfo.wholePinsNameNum == recentMap) {
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+                if (isDuplicate) {
+                    // 如果是重复的，跳过当前 multimap
+                    continue;
+                }
+                if (recentPinsNameNum.size() == 4) {
+                    // 如果队列已满，移除最早的 multimap
+                    recentPinsNameNum.pop_front();
+                }
+                recentPinsNameNum.push_back(symbolInfo.wholePinsNameNum);
 
 
                 
@@ -153,6 +153,7 @@ void Kicad8SymboltoTrainPin::SymboltoJsonl()
 
                 bool containsVBar = false;
                 bool allSingleElement = true;
+                int countVCC = 0, countGND =0 ,coutNC=0;
                 if (pinOutInfo.size() < 2){
                     continue;
                 }
@@ -160,14 +161,49 @@ void Kicad8SymboltoTrainPin::SymboltoJsonl()
                 "GND", "VSS", "VSSA", "AGND", "DGND", "PGND", "PGND", "GROUND", "NC" };
                 for ( auto& innerVec : pinOutInfo) {
 
-                    for (auto it = innerVec.begin(); it != innerVec.end(); ) {
+                    for (auto it = innerVec.begin(); it != innerVec.end(); ++it) {
                         if (*it == "/v") {
                             containsVBar = true;
                             std::cout << "Found '/v' in the string: " << *it << std::endl;
                             break; 
-                        } else if (std::find(voltageSources.begin(), voltageSources.end(), *it) != voltageSources.end()) {
+                        } 
+
+                        // if ((*it).find("VCC") != std::string::npos || (*it).find("VDD") != std::string::npos) {
+                        //     countVCC += 1;
+                        //     break; // 更新迭代器以继续迭代
+                        // } else if ((*it).find("GND") != std::string::npos) {
+                        //     countGND += 1;
+                        //     break; // 更新迭代器以继续迭代
+                        // } else if ((*it).find("NC") != std::string::npos) {
+                        //     coutNC += 1; // 修正变量名
+                        //     break; // 更新迭代器以继续迭代
+                        // }
+
+
+                    }
+                    if (innerVec.size() > 1) {
+                        allSingleElement = false;
+                    }
+                    if (containsVBar) {
+                        break; 
+                    }
+                }
+                if( countVCC>1 || countGND> 1 || coutNC > 1 ){
+                    continue;
+                }
+                if(allSingleElement){
+                    continue;
+                }
+                if (containsVBar) {
+                    continue; 
+                }
+                for ( auto& innerVec : pinOutInfo) {
+
+                    for (auto it = innerVec.begin(); it != innerVec.end(); ) {
+
+                        if (std::find(voltageSources.begin(), voltageSources.end(), *it) != voltageSources.end()) {
                             it = innerVec.erase(it);
-                        } else { 
+                        }else{
                             size_t startPos = it->find("~{");
                             while (startPos != std::string::npos) {
                                 it->erase(startPos, 2);  
@@ -182,41 +218,30 @@ void Kicad8SymboltoTrainPin::SymboltoJsonl()
                             ++it; // 只有当没有删除当前元素时，才递增迭代器
                         }
                     }
-                    if (innerVec.size() > 1) {
-                        allSingleElement = false;
-                    }
-                    if (containsVBar) {
-                        break; 
-                    }
+
                 }
 
-                if(allSingleElement){
-                    continue;
-                }
-                if (containsVBar) {
-                    continue; 
-                }
                 pinOutInfo.erase(
                     std::remove_if(pinOutInfo.begin(), pinOutInfo.end(),
                                 [](const std::vector<std::string>& v) { return v.empty(); }),
                     pinOutInfo.end()
                 );
+                //---------------------输入去重-------------------------//
+                // bool isDuplicate = false;
+                // for (const auto& recentMap : deWeightPinOut) {
+                //     if ( recentMap == pinOutInfo ) {
+                //         isDuplicate = true;
+                //         break;
+                //     }
+                // }
+                // if (isDuplicate) {
+                //     continue;
+                // }
+                // if (deWeightPinOut.size() == 4) {
+                //     deWeightPinOut.pop_front();
+                // }
+                // deWeightPinOut.push_back(pinOutInfo);
 
-
-                bool isDuplicate = false;
-                for (const auto& recentMap : deWeightPinOut) {
-                    if ( recentMap == pinOutInfo ) {
-                        isDuplicate = true;
-                        break;
-                    }
-                }
-                if (isDuplicate) {
-                    continue;
-                }
-                if (deWeightPinOut.size() == 4) {
-                    deWeightPinOut.pop_front();
-                }
-                deWeightPinOut.push_back(pinOutInfo);
 
                 std::stringstream in,out ;
                 auto it_end = symbolInfo.wholePinsNameNum.end();
@@ -244,18 +269,32 @@ void Kicad8SymboltoTrainPin::SymboltoJsonl()
                 data.SetObject();
 
 
-                Value conversations(kArrayType);
-                Value conversation1(kObjectType);
-                conversation1.AddMember("role", "user", data.GetAllocator());
-                conversation1.AddMember("content", Value(user_content.c_str(), data.GetAllocator()).Move(), data.GetAllocator());
+                // Value conversations(kArrayType);
+                // Value conversation1(kObjectType);
+                // conversation1.AddMember("role", "user", data.GetAllocator());
+                // conversation1.AddMember("content", Value(user_content.c_str(), data.GetAllocator()).Move(), data.GetAllocator());
 
-                conversations.PushBack(conversation1, data.GetAllocator());
+                // conversations.PushBack(conversation1, data.GetAllocator());
 
-                Value conversation2(kObjectType);
-                conversation2.AddMember("role", "assistant", data.GetAllocator());
-                conversation2.AddMember("content", Value(assistant_content.c_str(), data.GetAllocator()).Move(), data.GetAllocator());
-                conversations.PushBack(conversation2, data.GetAllocator());
-                data.AddMember("conversations", conversations, data.GetAllocator());
+                // Value conversation2(kObjectType);
+                // conversation2.AddMember("role", "assistant", data.GetAllocator());
+                // conversation2.AddMember("content", Value(assistant_content.c_str(), data.GetAllocator()).Move(), data.GetAllocator());
+                // conversations.PushBack(conversation2, data.GetAllocator());
+                // data.AddMember("conversations", conversations, data.GetAllocator());
+
+
+
+                rapidjson::Value valSymbol(rapidjson::kStringType);
+                valSymbol.SetString( symbolInfo.symbolName.c_str() , symbolInfo.symbolName.size());
+                data.AddMember("symbol", valSymbol, data.GetAllocator());
+
+                rapidjson::Value inPin(rapidjson::kStringType);
+                inPin.SetString( user_content.c_str() , user_content.size());
+                data.AddMember("in",inPin, data.GetAllocator());
+
+                rapidjson::Value outArray(rapidjson::kStringType);
+                outArray.SetString( assistant_content.c_str() , assistant_content.size());
+                data.AddMember("out", outArray, data.GetAllocator());
 
 
                 StringBuffer buffer;

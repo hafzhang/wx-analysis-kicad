@@ -47,28 +47,41 @@ void AnalysisLCSymbol::AnalysisSangleLCSymbol()
 
     // 获取源文件夹中所有符合条件的文件路径
     std::vector<std::string> fileList;
+    std::vector<std::string> fileLists6;
+    std::vector<std::string> fileLists12;
     // int PinNumber = 0;
     for( const auto& filePath : files ){
         
         if( filePath.Contains( ".esym" ) ){
            std::vector<std::vector<std::string>> vecPinsInfo  = importLCSYM( filePath.ToStdString() );
-            if( vecPinsInfo.size() >150 )
+            if( vecPinsInfo.size() < 6 )
             {
                 fileList.push_back(filePath.ToStdString());
-                // csvFile << SYMFileName<<", "<< vecPinsInfo.size() << "\n";
+
+            }
+            if(  vecPinsInfo.size() >= 6 && vecPinsInfo.size() < 12 )
+            {
+                fileLists6.push_back(filePath.ToStdString());
   
             }
-            // bool pinNUmberDigital = true;
-            // string pinNumber = "";
-            // for (const auto& singlePinInfo : vecPinsInfo){
-            //     pinNumber = singlePinInfo[1] ;
-            //     if (! isNumber(pinNumber)) pinNUmberDigital = false;
-            // }
+            if( vecPinsInfo.size() >= 12 && vecPinsInfo.size() < 20 )
+            {
+                fileLists12.push_back(filePath.ToStdString());
+  
+            }
             
-            // if(pinNUmberDigital == false ){
-            //     fileList.push_back(filePath.ToStdString());
-            //     csvFile << SYMFileName<<", "<< vecPinsInfo.size() << ", "<< pinNumber << "\n";
-            // }
+            if(fileList.size() >= 2000) {
+                moveFiles(fileList, selectExportDir);
+                fileList.clear(); // 重置列表
+            }
+            else if(fileLists6.size() >= 2000) {
+                moveFiles(fileLists6, "C://Users//haf//Desktop//kicad_related_file//check_symbols//6-11pin");
+                fileLists6.clear(); // 重置列表
+            }
+            else if(fileLists12.size() >= 2000) {
+                moveFiles(fileLists12, "C://Users//haf//Desktop//kicad_related_file//check_symbols//12-20pin");
+                fileLists12.clear(); // 重置列表
+            }
 
         }
     }
@@ -76,6 +89,9 @@ void AnalysisLCSymbol::AnalysisSangleLCSymbol()
     // csvFile.close();
 
     moveFiles(fileList, selectExportDir);
+    moveFiles(fileLists6, "C://Users//haf//Desktop//kicad_related_file//check_symbols//6-11pin");
+    moveFiles(fileLists12, "C://Users//haf//Desktop//kicad_related_file//check_symbols//12-20pin");
+
     wxMessageBox( wxT("This moveFiles is finished."), wxT("This is the title"), wxICON_INFORMATION);
 }
 

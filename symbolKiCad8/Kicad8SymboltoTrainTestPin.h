@@ -35,10 +35,12 @@ public:
 
     struct SymbolInfo {
         std::string symbolName;
+        std::string symbolReference;
         std::string value;
         std::string PinName;
         std::string PinNumber;
         std::vector<std::string> nameNumberValues;
+        // std::multimap<std::string, std::pair<std::string, std::string>, CompareAlphaNumeric> wholePinsNameNum;
         std::multimap<std::string, std::string, CompareAlphaNumeric> wholePinsNameNum;
         std::vector<PinCoord> wholePinsCoord;
 
@@ -46,12 +48,15 @@ public:
 
 public:
 
+    void SymboltoJsonl();
+    
     std::string vectorToString(const std::vector<std::vector<std::string>>& vec);
+    std::vector<std::string> Split( std::string strContext,std::string StrDelimiter );
 
     std::vector<std::vector<std::string>> analysisPinCoord(const std::vector<PinCoord>& wholePinsCoord);
     SymbolInfo parseSymbolInfo(const wxString& strInFileFullPath);
 
-    void SymboltoJsonl();
+    
 
 
     std::string replaceAll(std::string str, const std::string& from, const std::string& to);

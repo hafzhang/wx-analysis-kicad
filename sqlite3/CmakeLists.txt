@@ -1,0 +1,11 @@
+# # cmake needs this line
+# SET(CMAKE_BUILD_TYPE "sqlite3")
+
+# add_library(sqlite3 ../sqlite3)
+
+find_package(sqlite3  REQUIRED)
+include_directories(${SQLite3_INCLUDE_DIRS})
+
+# target_link_libraries(sqlite3 ${sqLite3_LIBRARIES}) 
+
+# add_library(myproject::sqlite3 ALIAS sqlite3)
